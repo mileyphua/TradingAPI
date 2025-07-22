@@ -88,9 +88,8 @@ def send_trading_signal(webhook_url, instrument, action):
     body_string = f"description : JMA US500 v3 (10,000, 0.1, 100, Fixed, , 2, 50, 0, 10, close, 33, 63, 9, 10, Default, 2, Solid, 1.5, 1W, 85, 2.4, 0.3, 2, 0.8, 0, 14, 20, 5, top_right, bottom_left, 1, 1, 20, 5)\ntimestamp : 30\nticker : {instrument}\naction: {action} \ncontracts: 100 \nposition_size: {'0' if action == 'exit' else '100'}\ncomment : {'Buy' if action == 'buy' else 'Sell' if action == 'sell' else 'Exit Long'}"
     
     # Exact JSON format as requested by user
-    payload = {
-        "body": body_string
-    }
+    payload = body_string
+    
     
     try:
         response = requests.post(webhook_url, json=payload, timeout=10)
@@ -239,9 +238,8 @@ with col1:
         # JSON Format Display
         st.subheader("📋 JSON Payload Format")
         with st.expander("View Current JSON Format", expanded=False):
-            sample_payload = {
-                "body": f"description : JMA US500 v3 (10,000, 0.1, 100, Fixed, , 2, 50, 0, 10, close, 33, 63, 9, 10, Default, 2, Solid, 1.5, 1W, 85, 2.4, 0.3, 2, 0.8, 0, 14, 20, 5, top_right, bottom_left, 1, 1, 20, 5)\\ntimestamp : 30\\nticker : {instrument}\\naction: sell \\ncontracts: 100 \\nposition_size: 0\\ncomment : Exit Long"
-            }
+            sample_payload = "description : JMA US500 v3 (10,000, 0.1, 100, Fixed, , 2, 50, 0, 10, close, 33, 63, 9, 10, Default, 2, Solid, 1.5, 1W, 85, 2.4, 0.3, 2, 0.8, 0, 14, 20, 5, top_right, bottom_left, 1, 1, 20, 5)\\ntimestamp : 30\\nticker : {instrument}\\naction: sell \\ncontracts: 100 \\nposition_size: 0\\ncomment : Exit Long"
+            
             st.json(sample_payload)
     else:
         st.warning("No webhooks configured. Please add a webhook in the sidebar.")
