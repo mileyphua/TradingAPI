@@ -96,6 +96,19 @@ def delete_webhook(webhook_id):
     c.execute("UPDATE webhooks SET active = 0 WHERE id = ?", (webhook_id,))
     conn.commit()
 
+@st.cache_data(ttl=30)
+def get_last_trading_actions(action_type):
+    conn = init_db()
+    query = """
+        SELECT webhook_name, action, instrument, timestamp 
+        FROM trading_actions 
+        WHERE lower(action) = ? 
+        ORDER BY timestamp DESC 
+        LIMIT 3
+    """
+    df = pd.read_sql_query(query, conn, params=(action_type.lower(),))
+    return df
+    
 # def send_trading_signal(webhook_url, instrument, action):
 #     """Send trading signal with exact JSON format as requested"""
 #     body_string = f"description : JMA US500 v3 (10,000, 0.1, 100, Fixed, , 2, 50, 0, 10, close, 33, 63, 9, 10, Default, 2, Solid, 1.5, 1W, 85, 2.4, 0.3, 2, 0.8, 0, 14, 20, 5, top_right, bottom_left, 1, 1, 20, 5)\ntimestamp : 30\nticker : {instrument}\naction: {action} \ncontracts: 100 \nposition_size: {'0' if action == 'exit' else '100'}\ncomment : {'Buy' if action == 'buy' else 'Sell' if action == 'sell' else 'Exit Long'}"
@@ -280,7 +293,8 @@ with col1:
                 actions_df = get_last_trading_actions(action_type)
                 if not actions_df.empty:
                     for _, row in actions_df.iterrows():
-                        st.write(f"- [{row['timestamp']}] {row['webhook_name']} | {row['instrument']} | {row['action'].capitalize()}")
+                        ts_str = pd.to_datetime(row['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
+                        st.write(f"- [{ts_str}] {row['webhook_name']} | {row['instrument']} | {row['action'].capitalize()}")
                 else:
                     st.write("No recent actions.")
     else:
