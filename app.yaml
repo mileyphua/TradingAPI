@@ -1,0 +1,21 @@
+runtime: python39
+
+env_variables:
+  FLASK_ENV: production
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 10
+  target_cpu_utilization: 0.6
+
+handlers:
+- url: /static
+  static_dir: src/static
+  secure: always
+
+- url: /.*
+  script: auto
+  secure: always
+
+entrypoint: gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 src.main:app
+
