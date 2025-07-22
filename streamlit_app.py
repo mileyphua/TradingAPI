@@ -83,21 +83,45 @@ def delete_webhook(webhook_id):
     c.execute("UPDATE webhooks SET active = 0 WHERE id = ?", (webhook_id,))
     conn.commit()
 
+# def send_trading_signal(webhook_url, instrument, action):
+#     """Send trading signal with exact JSON format as requested"""
+#     body_string = f"description : JMA US500 v3 (10,000, 0.1, 100, Fixed, , 2, 50, 0, 10, close, 33, 63, 9, 10, Default, 2, Solid, 1.5, 1W, 85, 2.4, 0.3, 2, 0.8, 0, 14, 20, 5, top_right, bottom_left, 1, 1, 20, 5)\ntimestamp : 30\nticker : {instrument}\naction: {action} \ncontracts: 100 \nposition_size: {'0' if action == 'exit' else '100'}\ncomment : {'Buy' if action == 'buy' else 'Sell' if action == 'sell' else 'Exit Long'}"
+    
+#     # Exact JSON format as requested by user
+#     payload = body_string
+    
+    
+#     try:
+#         response = requests.post(webhook_url, json=payload, timeout=10)
+#         return response.status_code == 200, response.status_code
+#     except requests.exceptions.Timeout:
+#         return False, "Timeout"
+#     except Exception as e:
+#         return False, str(e)
+
 def send_trading_signal(webhook_url, instrument, action):
-    """Send trading signal with exact JSON format as requested"""
-    body_string = f"description : JMA US500 v3 (10,000, 0.1, 100, Fixed, , 2, 50, 0, 10, close, 33, 63, 9, 10, Default, 2, Solid, 1.5, 1W, 85, 2.4, 0.3, 2, 0.8, 0, 14, 20, 5, top_right, bottom_left, 1, 1, 20, 5)\ntimestamp : 30\nticker : {instrument}\naction: {action} \ncontracts: 100 \nposition_size: {'0' if action == 'exit' else '100'}\ncomment : {'Buy' if action == 'buy' else 'Sell' if action == 'sell' else 'Exit Long'}"
+    body_string = (
+        f"description : JMA US500 v3 (10,000, 0.1, 100, Fixed, , 2, 50, 0, 10, close, 33, 63, 9, 10, Default, 2, Solid, 1.5, 1W, 85, 2.4, 0.3, 2, 0.8, 0, 14, 20, 5, top_right, bottom_left, 1, 1, 20, 5)\n"
+        f"timestamp : 30\n"
+        f"ticker : {instrument}\n"
+        f"action: {action}\n"
+        f"contracts: 100\n"
+        f"position_size: {'0' if action == 'exit' else '100'}\n"
+        f"comment : {'Buy' if action == 'buy' else 'Sell' if action == 'sell' else 'Exit Long'}"
+    )
     
-    # Exact JSON format as requested by user
-    payload = body_string
-    
+    headers = {
+        'Content-Type': 'text/plain; charset=utf-8'
+    }
     
     try:
-        response = requests.post(webhook_url, json=payload, timeout=10)
+        response = requests.post(webhook_url, data=body_string.encode('utf-8'), headers=headers, timeout=10)
         return response.status_code == 200, response.status_code
     except requests.exceptions.Timeout:
         return False, "Timeout"
     except Exception as e:
         return False, str(e)
+
 
 # Initialize database
 init_db()
