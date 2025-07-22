@@ -29,7 +29,7 @@ st.markdown("""
     border-radius: 10px;
     padding: 1rem;
     margin: 1rem 0;
-    background: #f9f9f9;
+    background: #171717;
 }
 .trading-button {
     width: 100%;
@@ -89,10 +89,6 @@ def send_trading_signal(webhook_url, instrument, action):
     
     # Exact JSON format as requested by user
     payload = {
-        "headers": {
-            "content-type": "text/plain; charset=utf-8",
-            "User-Agent": "Trading-Webhook-Proxy/2.0"
-        },
         "body": body_string
     }
     
@@ -244,10 +240,6 @@ with col1:
         st.subheader("📋 JSON Payload Format")
         with st.expander("View Current JSON Format", expanded=False):
             sample_payload = {
-                "headers": {
-                    "content-type": "text/plain; charset=utf-8",
-                    "User-Agent": "Trading-Webhook-Proxy/2.0"
-                },
                 "body": f"description : JMA US500 v3 (10,000, 0.1, 100, Fixed, , 2, 50, 0, 10, close, 33, 63, 9, 10, Default, 2, Solid, 1.5, 1W, 85, 2.4, 0.3, 2, 0.8, 0, 14, 20, 5, top_right, bottom_left, 1, 1, 20, 5)\\ntimestamp : 30\\nticker : {instrument}\\naction: sell \\ncontracts: 100 \\nposition_size: 0\\ncomment : Exit Long"
             }
             st.json(sample_payload)
