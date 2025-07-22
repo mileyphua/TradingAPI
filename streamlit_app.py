@@ -253,7 +253,7 @@ with col2:
                 st.markdown(f"""
                 <div class="webhook-card">
                     <h4>{webhook['name']}</h4>
-                    <p><small>🔗 {webhook['url'][:50]}...</small></p>
+                    <p><small>🔗 {webhook['url'][50:]}...</small></p>
                     <span style="color: green;">● Active</span>
                 </div>
                 """, unsafe_allow_html=True)
