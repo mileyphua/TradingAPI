@@ -61,9 +61,22 @@ def init_db():
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS webhooks
                  (id INTEGER PRIMARY KEY, name TEXT, url TEXT, active BOOLEAN)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS trading_actions
+             (id INTEGER PRIMARY KEY,
+              webhook_name TEXT,
+              action TEXT,
+              instrument TEXT,
+              timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)''')
     conn.commit()
     return conn
-
+    
+def log_trading_action(webhook_name, action, instrument):
+    conn = init_db()
+    c = conn.cursor()
+    c.execute("INSERT INTO trading_actions (webhook_name, action, instrument) VALUES (?, ?, ?)",
+              (webhook_name, action, instrument))
+    conn.commit()
+    
 def add_webhook(name, url):
     conn = init_db()
     c = conn.cursor()
@@ -197,7 +210,7 @@ with col1:
                     webhook_url = webhooks_df[webhooks_df['name'] == selected_webhook]['url'].iloc[0]
                     success, status = send_trading_signal(webhook_url, instrument, 'buy')
                     if success:
-                        st.success("BUY signal sent successfully!")
+                        log_trading_action(selected_webhook, 'Buy', instrument)
                     else:
                         st.error(f"Failed to send BUY signal: {status}")
         
@@ -226,7 +239,7 @@ with col1:
                     webhook_url = webhooks_df[webhooks_df['name'] == selected_webhook]['url'].iloc[0]
                     success, status = send_trading_signal(webhook_url, instrument, 'sell')
                     if success:
-                        st.success("SELL signal sent successfully!")
+                        log_trading_action(selected_webhook, 'Sell', instrument)
                     else:
                         st.error(f"Failed to send SELL signal: {status}")
         
@@ -255,16 +268,21 @@ with col1:
                     webhook_url = webhooks_df[webhooks_df['name'] == selected_webhook]['url'].iloc[0]
                     success, status = send_trading_signal(webhook_url, instrument, 'exit')
                     if success:
-                        st.success("EXIT signal sent successfully!")
+                        log_trading_action(selected_webhook, 'Exit', instrument)
                     else:
                         st.error(f"Failed to send EXIT signal: {status}")
         
         # JSON Format Display
-        st.subheader("📋 JSON Payload Format")
-        with st.expander("View Current JSON Format", expanded=False):
-            sample_payload = "description : JMA US500 v3 (10,000, 0.1, 100, Fixed, , 2, 50, 0, 10, close, 33, 63, 9, 10, Default, 2, Solid, 1.5, 1W, 85, 2.4, 0.3, 2, 0.8, 0, 14, 20, 5, top_right, bottom_left, 1, 1, 20, 5)\\ntimestamp : 30\\nticker : {instrument}\\naction: sell \\ncontracts: 100 \\nposition_size: 0\\ncomment : Exit Long"
-            
-            st.json(sample_payload)
+        st.subheader("🕒 Previous Trading Actions")
+        with st.expander("View Previous Actions", expanded=False):
+            for action_type in ["buy", "sell", "exit"]:
+                st.markdown(f"**Last {action_type.capitalize()} Actions**")
+                actions_df = get_last_trading_actions(action_type)
+                if not actions_df.empty:
+                    for _, row in actions_df.iterrows():
+                        st.write(f"- [{row['timestamp']}] {row['webhook_name']} | {row['instrument']} | {row['action'].capitalize()}")
+                else:
+                    st.write("No recent actions.")
     else:
         st.warning("No webhooks configured. Please add a webhook in the sidebar.")
 
