@@ -193,7 +193,7 @@ with col1:
         
         # Instrument selection
         instrument = st.selectbox("Trading Instrument", 
-                                ["GOLD", "US100", "US30", "US500", "DE40"])
+                                ["GOLD", "US100", "US30", "US500", "DE40","J225"])
         
         # Trading buttons
         col_buy, col_sell, col_exit = st.columns(3)
